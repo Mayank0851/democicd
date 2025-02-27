@@ -28,7 +28,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no ubuntu@65.2.34.207 << 'EOF'
           set -e  # Exit on any command failure
           
-          if [ /home/ubuntu/democicd ]; then
+          if [ -d "/home/ubuntu/democicd" ]; then
           echo "moving in project"
           else
           cd /home/ubuntu
