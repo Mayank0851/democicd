@@ -29,6 +29,7 @@ jobs:
           set -e  # Exit on any command failure
           
           if [ "/home/ubuntu/democicd" ]; then
+          echo "moving in project"
           else
           cd /home/ubuntu
           git clone https://github.com/Mayank0851/democicd
