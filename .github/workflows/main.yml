@@ -27,10 +27,17 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@65.2.34.207 << 'EOF'
           set -e  # Exit on any command failure
+          
+          if [ "/home/ubuntu/democicd" ]; then
+          else
+          cd /home/ubuntu
+          git clone https://github.com/Mayank0851/democicd
+          cd democicd
+          fi
 
       
 
           # Start Uvicorn in the background, redirect logs, and detach process
-          nohup env/bin/uvicorn main:app --host 0.0.0.0 --port 8080 > uvicorn.log 2>&1 & disown
+          #nohup env/bin/uvicorn main:app --host 0.0.0.0 --port 8080 > uvicorn.log 2>&1 & disown
 
           EOF
