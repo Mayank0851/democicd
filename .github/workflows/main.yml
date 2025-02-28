@@ -36,9 +36,25 @@ jobs:
           cd democicd
           fi
 
-      
+          # Install Python if not already installed
+          echo "Installing Python and dependencies..."
+          sudo apt update && sudo apt install -y python3 python3-venv python3-pip
 
-          # Start Uvicorn in the background, redirect logs, and detach process
+          # Set up virtual environment
+          if [ ! -d "env" ]; then
+            python3 -m venv env
+          fi
+          source env/bin/activate
+
+          # Install dependencies
+          pip install --upgrade pip
+          pip install fastapi uvicorn -r requirements.txt  # Ensure all dependencies are installed
+
+          # Kill any existing Uvicorn process
+          pkill uvicorn || true
+
+          # Start Uvicorn in the background
           nohup env/bin/uvicorn main:app --host 0.0.0.0 --port 8080 > uvicorn.log 2>&1 & disown
 
           EOF
+      
