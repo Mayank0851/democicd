@@ -1,0 +1,68 @@
+name: Pipeline Demo
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-stage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Take code
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      - name: Setup SSH Agent
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Deploy to VM
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@13.201.44.202 << 'EOF'
+          set -e  # Exit on any command failure
+      
+          # Clone or update the repository
+          if [ -d "/home/ubuntu/democicd" ]; then
+            echo "Repository exists. Pulling latest changes..."
+            cd /home/ubuntu/democicd
+            git reset --hard  # Prevent merge conflicts
+            git pull origin main
+          else
+            echo "Cloning repository..."
+            cd /home/ubuntu
+            git clone https://github.com/Mayank0851/democicd
+            cd democicd
+          fi
+      
+          # Install Python and dependencies
+          echo "Installing Python and dependencies..."
+          sudo apt update && sudo apt install -y python3 python3-venv python3-pip
+      
+          # Set up virtual environment
+          if [ ! -d "env" ]; then
+            python3 -m venv env
+          fi
+          source env/bin/activate
+      
+          # Install dependencies
+          pip install --upgrade pip
+          if [ -f "requirements.txt" ]; then
+            pip install -r requirements.txt
+          else
+            echo "Error: requirements.txt not found!" >&2
+            exit 1
+          fi
+      
+          # Kill any existing Uvicorn process
+          pkill uvicorn || true
+      
+          # Start Uvicorn in the background
+          nohup env/bin/uvicorn main:app --host 0.0.0.0 --port 8080 > uvicorn.log 2>&1 & disown
+          EOF
