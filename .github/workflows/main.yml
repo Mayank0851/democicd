@@ -45,13 +45,8 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_KEY }}
 
       - name: Deploy to VM
-<<<<<<< HEAD
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@52.66.204.108 << 'EOF'
-=======
-        run: | 
-          ssh -o StrictHostKeyChecking=no ubuntu@65.2.131.91 << 'EOF'
->>>>>>> 7447066 (changes)
           set -e  # Exit on any command failure
       
           # Clone or update the repository
