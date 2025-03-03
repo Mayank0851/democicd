@@ -65,6 +65,10 @@ jobs:
           # Install Python and dependencies
           echo "Installing Python and dependencies..."
           sudo apt update && sudo apt install -y python3 python3-venv python3-pip
+          # Install Prometheus and Grafana
+          echo "Installing Prometheus & Grafana..."
+          sudo apt install -y prometheus grafana
+          
       
           # Set up virtual environment
           if [ ! -d "env" ]; then
