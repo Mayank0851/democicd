@@ -26,8 +26,10 @@ jobs:
 
       - name: Run Tests
         run: |
-          source env/bin/activate
-          pytest --maxfail=1 --disable-warnings
+          pip install -r requirement.txt
+          pip install pytest 
+          pip install httpx
+          pytest .
 
   deploy-stage:
     needs: test  # Ensure tests pass before deployment
