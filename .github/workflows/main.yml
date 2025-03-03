@@ -68,6 +68,13 @@ jobs:
           # Install Prometheus and Grafana
           echo "Installing Prometheus & Grafana..."
           sudo apt install -y prometheus
+
+          # Add Grafana Repository & Install
+          echo "Adding Grafana Repository..."
+          sudo apt-get install -y software-properties-common
+          sudo wget -q -O - https://packages.grafana.com/gpg.key | sudo tee /usr/share/keyrings/grafana.key
+          echo "deb [signed-by=/usr/share/keyrings/grafana.key] https://packages.grafana.com/oss/deb stable main" | sudo tee /etc/apt/sources.list.d/grafana.list
+
           sudo apt update
           sudo apt install -y grafana
           
