@@ -68,6 +68,8 @@ jobs:
           # Install Prometheus and Grafana
           echo "Installing Prometheus & Grafana..."
           sudo apt install -y prometheus grafana
+          sudo apt update
+          sudo apt install -y grafana
           
       
           # Set up virtual environment
