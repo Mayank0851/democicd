@@ -53,7 +53,6 @@ jobs:
           if [ -d "/home/ubuntu/democicd" ]; then
             echo "Repository exists. Pulling latest changes..."
             cd /home/ubuntu/democicd
-            git reset --hard  # Prevent merge conflicts
             git pull origin main
           else
             echo "Cloning repository..."
@@ -63,7 +62,7 @@ jobs:
           fi
           if ! command -v docker &> /dev/null
           then 
-            echo"docker not found. Installing...."
+            echo "docker not found. Installing...."
             sudo apt update 
             sudo apt install -y docker.io 
             sudo systemctl start docker 
