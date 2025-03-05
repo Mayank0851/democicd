@@ -1,4 +1,4 @@
-name: FastAPI CI/CD
+name: Pipeline Demo
 
 on:
   push:
@@ -26,29 +26,19 @@ jobs:
 
       - name: Run Tests
         run: |
-          pip install pytest httpx
+          pip install -r requirements.txt
+          pip install pytest 
+          pip install httpx
           pytest .
 
-  build-and-push:
-    needs: test
+  deploy-stage:
+    needs: test  # Ensure tests pass before deployment
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Build Docker Image
-        run: |
-          docker build -t mayankvishwakarma08/fastapi-app:latest .
-
-      - name: Push Docker Image (Public)
-        run: |
-          docker push mayankvishwakarma08/fastapi-app:latest
-
-  deploy-stage:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-
-    steps:
       - name: Setup SSH Agent
         uses: webfactory/ssh-agent@v0.5.3
         with:
@@ -58,16 +48,35 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@13.201.55.132 << 'EOF'
           set -e  # Exit on any command failure
+      
+          # Clone or update the repository
+          if [ -d "/home/ubuntu/democicd" ]; then
+            echo "Repository exists. Pulling latest changes..."
+            cd /home/ubuntu/democicd
+            git reset --hard  # Prevent merge conflicts
+            git pull origin main
+          else
+            echo "Cloning repository..."
+            cd /home/ubuntu
+            git clone https://github.com/Mayank0851/democicd
+            cd democicd
+          fi
+          if ! command -v docker &> /dev/null
+          then 
+            echo"docker not found. Installing...."
+            sudo apt update 
+            sudo apt install -y docker.io 
+            sudo systemctl start docker 
+            sudo systemctl enable docker 
+            echo "docker installed successfully...."
+          else
+            echo"docker is already installed "
 
-          echo "Stopping and removing existing container..."
-          docker stop fastapi-app || true
-          docker rm fastapi-app || true
+            fi
 
-          echo "Pulling latest Docker image..."
-          docker pull mayankvishwakarma08/fastapi-app:latest
-
-          echo "Starting new container..."
-          docker run -d --name fastapi-app -p 8080:8000 --restart always mayankvishwakarma08/fastapi-app:latest
-
+            sudo docker pull iamyashjain/pipeline:latest 
+            sudo docker stop fastapi || true
+            sudo docker rm fastapi || true
+            sudo docker run -d --name fastapi -p 8080:8080 iamyashjain/pipeline:latest
+      
           EOF
-
