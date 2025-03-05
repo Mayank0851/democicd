@@ -69,13 +69,13 @@ jobs:
             sudo systemctl enable docker 
             echo "docker installed successfully...."
           else
-            echo"docker is already installed "
+            echo "docker is already installed "
 
             fi
 
             sudo docker pull iamyashjain/pipeline:latest 
             sudo docker stop fastapi || true
             sudo docker rm fastapi || true
-            sudo docker run -d --name fastapi -p 8081:8081 iamyashjain/pipeline:latest
+            sudo docker run -d --name fastapi -p 8080:8081 iamyashjain/pipeline:latest
       
           EOF
