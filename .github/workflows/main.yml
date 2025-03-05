@@ -1,4 +1,4 @@
-name: Pipeline Demo
+name: FastAPI CI/CD
 
 on:
   push:
@@ -26,19 +26,29 @@ jobs:
 
       - name: Run Tests
         run: |
-          pip install -r requirements.txt
-          pip install pytest 
-          pip install httpx
+          pip install pytest httpx
           pytest .
 
-  deploy-stage:
-    needs: test  # Ensure tests pass before deployment
+  build-and-push:
+    needs: test
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
 
+      - name: Build Docker Image
+        run: |
+          docker build -t mayankvishwakarma08/fastapi-app:latest .
+
+      - name: Push Docker Image (Public)
+        run: |
+          docker push mayankvishwakarma08/fastapi-app:latest
+
+  deploy-stage:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Setup SSH Agent
         uses: webfactory/ssh-agent@v0.5.3
         with:
@@ -48,59 +58,16 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@13.201.55.132 << 'EOF'
           set -e  # Exit on any command failure
-      
-          # Clone or update the repository
-          if [ -d "/home/ubuntu/democicd" ]; then
-            echo "Repository exists. Pulling latest changes..."
-            cd /home/ubuntu/democicd
-            git reset --hard  # Prevent merge conflicts
-            git pull origin main
-          else
-            echo "Cloning repository..."
-            cd /home/ubuntu
-            git clone https://github.com/Mayank0851/democicd
-            cd democicd
-          fi
-      
-          # Install Python and dependencies
-          echo "Installing Python and dependencies..."
-          sudo apt update && sudo apt install -y python3 python3-venv python3-pip
-          # Install Prometheus and Grafana
-          echo "Installing Prometheus & Grafana..."
-          sudo apt install -y prometheus
 
-          # Add Grafana Repository & Install
-          echo "Adding Grafana Repository..."
-          sudo apt-get install -y software-properties-common
-          sudo wget -q -O - https://packages.grafana.com/gpg.key | sudo tee /usr/share/keyrings/grafana.key
-          echo "deb [signed-by=/usr/share/keyrings/grafana.key] https://packages.grafana.com/oss/deb stable main" | sudo tee /etc/apt/sources.list.d/grafana.list
+          echo "Stopping and removing existing container..."
+          docker stop fastapi-app || true
+          docker rm fastapi-app || true
 
-          sudo apt update
-          sudo apt install -y grafana
-          
-      
-          # Set up virtual environment
-          if [ ! -d "env" ]; then
-            python3 -m venv env
-          fi
-          source env/bin/activate
-      
-          # Install dependencies
-          pip install --upgrade pip
-          if [ -f "requirements.txt" ]; then
-            pip install -r requirements.txt
-          else
-            echo "Error: requirements.txt not found!" >&2
-            exit 1
-          fi
-      
-          # Kill any existing Uvicorn process
-          pkill uvicorn || true
-      
-          # Start Uvicorn in the background
-          nohup env/bin/uvicorn main:app --host 0.0.0.0 --port 8080 > uvicorn.log 2>&1 & disown
-          sudo systemctl enable prometheus
-          sudo systemctl start prometheus
-          sudo systemctl enable grafana-server
-          sudo systemctl start grafana-server
+          echo "Pulling latest Docker image..."
+          docker pull mayankvishwakarma08/fastapi-app:latest
+
+          echo "Starting new container..."
+          docker run -d --name fastapi-app -p 8080:8000 --restart always mayankvishwakarma08/fastapi-app:latest
+
           EOF
+
