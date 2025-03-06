@@ -76,6 +76,6 @@ jobs:
             sudo docker pull mayankvishwakarma08/fast-api
             sudo docker stop fast-api || true
             sudo docker rm fast-api || true
-            sudo docker run -d --name fast-api -p 8081:8080 mayankvishwakarma08/fast-api:latest
+            sudo docker run -d --name fast-api -p 8000:8000 mayankvishwakarma08/fast-api:latest
       
           EOF
