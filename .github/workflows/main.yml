@@ -46,7 +46,7 @@ jobs:
 
       - name: Deploy to VM
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@43.205.211.14 << 'EOF'
+          ssh -o StrictHostKeyChecking=no ubuntu@3.110.164.135 << 'EOF'
           set -e  # Exit on any command failure
       
           # Clone or update the repository
